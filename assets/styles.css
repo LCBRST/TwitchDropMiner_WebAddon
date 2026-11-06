@@ -240,7 +240,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 button.primary:hover { filter: brightness(1.08); }
 button.ghost { background: transparent; }
 button.danger { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, var(--border)); }
-button.icon { width: 36px; height: 36px; padding: 0; }
 button.small { padding: 5px 10px; font-size: 12.5px; }
 
 input[type="text"], input[type="search"], input[type="password"], input[type="number"], select, textarea {
@@ -423,7 +422,7 @@ select.compact { padding: 6px 9px; }
 
 .footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
   max-width: 1240px;

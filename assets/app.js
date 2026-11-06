@@ -1407,7 +1407,6 @@ function renderApiInfo() {
     container.append(el('span', { class: 'k', text: key }), el('span', { class: 'v', text: value }));
   }
   container.append(el('span', { class: 'k' }), el('span', { class: 'v muted', text: t('api_note') }));
-  $('#footer-api').textContent = api.url || '';
 }
 
 function renderLogs() {
@@ -1545,10 +1544,6 @@ function bindEvents() {
   });
 
   $('#disconnect').addEventListener('click', () => logout(false));
-  $('#theme-toggle').addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  });
   $('#lang-select').addEventListener('change', (event) => {
     state.lang = event.target.value;
     localStorage.setItem(LANG_KEY, state.lang);
@@ -1605,7 +1600,8 @@ function tokenFromHash() {
 
 async function init() {
   state.lang = detectLanguage();
-  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
+  applyTheme(localStorage.getItem(THEME_KEY) || (prefersLight ? 'light' : 'dark'));
   bindEvents();
   applyLanguage();
 
