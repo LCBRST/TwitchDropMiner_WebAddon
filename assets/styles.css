@@ -70,7 +70,7 @@ code { background: var(--panel-2); padding: .1em .35em; border-radius: 4px; }
   box-shadow: var(--shadow);
 }
 
-.gate-mark, .brand-mark {
+.gate-mark {
   display: inline-grid;
   place-items: center;
   width: 32px;
@@ -240,6 +240,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 button.primary:hover { filter: brightness(1.08); }
 button.ghost { background: transparent; }
 button.danger { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, var(--border)); }
+button.icon { width: 36px; height: 36px; padding: 0; }
 button.small { padding: 5px 10px; font-size: 12.5px; }
 
 input[type="text"], input[type="search"], input[type="password"], input[type="number"], select, textarea {

@@ -1544,6 +1544,10 @@ function bindEvents() {
   });
 
   $('#disconnect').addEventListener('click', () => logout(false));
+  $('#theme-toggle').addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
   $('#lang-select').addEventListener('change', (event) => {
     state.lang = event.target.value;
     localStorage.setItem(LANG_KEY, state.lang);
@@ -1600,8 +1604,7 @@ function tokenFromHash() {
 
 async function init() {
   state.lang = detectLanguage();
-  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
-  applyTheme(localStorage.getItem(THEME_KEY) || (prefersLight ? 'light' : 'dark'));
+  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   bindEvents();
   applyLanguage();
 
