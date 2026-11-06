@@ -28,7 +28,8 @@ one-off token and cookie; the proxy does not add authentication.
 |---|---|---|
 | GET | `/api/status` | engine state, watching channel, current drop progress, counts, login, websockets, version, uptime |
 | GET | `/api/channels` | `{"channels": [...]}` — id, login, name, online, game, viewers, ACL/drops flags, watching/selected, `can_watch` |
-| GET | `/api/campaigns` | `{"campaigns": [...]}` — campaign metadata, progress and a `drops` array with minutes/progress/claimable |
+| GET | `/api/campaigns` | `{"campaigns": [...]}` — campaign metadata, progress and a `drops` array with minutes/progress/claimable. Images carry both `image_url` (Twitch CDN) and `cached_image_url` (this miner) |
+| GET | `/images/{hash}.{ext}` | public; artwork from the miner's `cache/images/` (downloaded through the miner, so the browser does not need the CDN) |
 | GET | `/api/settings` | `{"settings": {...}, "api": {...}}`; `api_token` is `{"configured": bool}`, never the token |
 | GET | `/api/login` | sign-in/session/renewal status, including the one-off `urls` of the sign-in page while it is listening |
 | GET | `/api/logs?limit=200` | `{"lines": [...]}` — the console output buffer (1–1000 lines) |

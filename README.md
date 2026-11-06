@@ -60,6 +60,9 @@ select channels, claim drops, change settings and exit the miner.
 - Start or cancel a Twitch browser sign-in and request a session renewal without
   leaving the dashboard. The sign-in viewer is embedded in the page and proxied
   through the dashboard's own port, so only that port needs forwarding.
+- Reward and campaign artwork is served from the miner's local image cache
+  (`cache/images/`), with the Twitch CDN as a fallback. Images for campaigns
+  that have ended are removed automatically.
 - Quick actions with a single pause/resume toggle, refresh inventory, stop
   watching, claim ready drops and exit
 

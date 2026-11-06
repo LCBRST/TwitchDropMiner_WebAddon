@@ -1013,16 +1013,7 @@ function renderChannels() {
 }
 
 function campaignCard(campaign) {
-  const art = campaign.image_url
-    ? el('img', {
-        class: 'campaign-art',
-        src: campaign.image_url,
-        alt: '',
-        loading: 'lazy',
-        referrerpolicy: 'no-referrer',
-        onerror: (event) => { event.target.hidden = true; },
-      })
-    : null;
+  const art = cachedImage(campaign, 'campaign-art');
   const head = el('div', { class: 'campaign-head' },
     art,
     el('span', { class: 'game', text: campaign.game?.name || '—' }),
@@ -1246,20 +1237,39 @@ function inventoryEntries() {
   return entries;
 }
 
+function cachedImage(item, className, alt = '') {
+  const source = item?.cached_image_url || item?.image_url;
+  if (!source) return null;
+  const fallback = item?.image_url && item.image_url !== source ? item.image_url : '';
+  return el('img', {
+    class: className,
+    src: source,
+    alt,
+    title: alt || null,
+    loading: 'lazy',
+    referrerpolicy: 'no-referrer',
+    dataset: { fallback },
+    onerror: (event) => {
+      const image = event.target;
+      // The miner's cache may be unavailable; fall back to the CDN once.
+      if (image.dataset.fallback) {
+        image.src = image.dataset.fallback;
+        image.dataset.fallback = '';
+      } else {
+        image.hidden = true;
+      }
+    },
+  });
+}
+
 function rewardArt(benefits, limit = 3) {
-  const withImage = (benefits || []).filter((benefit) => benefit?.image_url);
+  const withImage = (benefits || []).filter(
+    (benefit) => benefit?.cached_image_url || benefit?.image_url,
+  );
   if (!withImage.length) return null;
   const row = el('span', { class: 'reward-art' });
   for (const benefit of withImage.slice(0, limit)) {
-    row.append(el('img', {
-      class: 'reward-img',
-      src: benefit.image_url,
-      alt: benefit.name,
-      title: benefit.name,
-      loading: 'lazy',
-      referrerpolicy: 'no-referrer',
-      onerror: (event) => { event.target.hidden = true; },
-    }));
+    row.append(cachedImage(benefit, 'reward-img', benefit.name));
   }
   if (withImage.length > limit) {
     row.append(el('span', {
