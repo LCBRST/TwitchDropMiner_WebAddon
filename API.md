@@ -10,7 +10,9 @@ X-API-Token: <token>
 ```
 
 `Authorization: Bearer <token>` is accepted as well. `GET /` and `GET /assets/*`
-are public so the dashboard can load and ask for the token. `GET /healthz`
+are public so the dashboard can load and ask for the token. `GET /auth` returns
+`{"required": bool}` without auth, and the dashboard uses it to skip the token
+prompt when `api auth off` / `api_auth_enabled false` is set. `GET /healthz`
 returns `{"ok": true}` without auth.
 
 Errors are JSON: `{"error": "message"}` with a 4xx status.

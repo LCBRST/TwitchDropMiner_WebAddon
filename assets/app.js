@@ -151,6 +151,10 @@ const I18N = {
     api_url: 'Dashboard URL',
     api_token: 'Token',
     api_token_set: 'configured',
+    api_auth: 'Authentication',
+    api_auth_enabled: 'token required',
+    api_auth_disabled: 'off',
+    auth_none: 'no token auth',
     api_note: 'The token can only be changed from the CLI (api rotate).',
     yes: 'yes',
     no: 'no',
@@ -309,6 +313,10 @@ const I18N = {
     api_url: '控制台地址',
     api_token: '口令',
     api_token_set: '已设置',
+    api_auth: '认证',
+    api_auth_enabled: '需要口令',
+    api_auth_disabled: '已关闭',
+    auth_none: '未启用口令',
     api_note: '口令只能在 CLI 里更换（api rotate）。',
     yes: '是',
     no: '否',
@@ -465,6 +473,10 @@ I18N['zh-TW'] = {
   api_url: '主控台位址',
   api_token: '口令',
   api_token_set: '已設定',
+  api_auth: '認證',
+  api_auth_enabled: '需要口令',
+  api_auth_disabled: '已關閉',
+  auth_none: '未啟用口令',
   api_note: '口令只能在 CLI 裡更換（api rotate）。',
   yes: '是',
   no: '否',
@@ -500,6 +512,7 @@ const state = {
   eventRetry: null,
   pollTimer: null,
   loginPoll: null,
+  authRequired: true,
 };
 
 // ---------------------------------------------------------------------------
@@ -630,6 +643,17 @@ async function apiPost(path, body) {
   return data;
 }
 
+async function checkAuthRequired() {
+  try {
+    const response = await fetch('/auth', { cache: 'no-store' });
+    if (!response.ok) return true;
+    const data = await response.json();
+    return data.required !== false;
+  } catch {
+    return true;
+  }
+}
+
 async function loadStatus() {
   state.status = await apiGet('/api/status');
   renderHeader();
@@ -686,6 +710,11 @@ async function connect(token) {
 }
 
 function logout(expired = false) {
+  if (!state.authRequired) {
+    // There is no gate to return to; reloading picks up the current mode.
+    location.reload();
+    return;
+  }
   state.token = '';
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_SESSION_KEY);
@@ -812,6 +841,9 @@ function renderHeader() {
   const status = state.status;
   if (!status) return;
   renderToggle();
+  const chipAuth = $('#chip-auth');
+  chipAuth.hidden = state.authRequired;
+  chipAuth.textContent = state.authRequired ? '' : t('auth_none');
   $('#version').textContent = status.version || '';
   const stateName =
     status.state === 'CHANNEL_SWITCH' && status.watching ? 'WATCHING' : status.state;
@@ -913,7 +945,6 @@ function renderAccount() {
     kvRow(t('account_state'), status?.state),
     kvRow(t('account_uptime'), formatUptime(status?.uptime_seconds)),
     kvRow(t('account_session'), session),
-    kvRow(t('account_api'), state.api?.url || location.origin + '/'),
   ];
   for (const row of rows) container.append(...row);
 }
@@ -982,7 +1013,18 @@ function renderChannels() {
 }
 
 function campaignCard(campaign) {
+  const art = campaign.image_url
+    ? el('img', {
+        class: 'campaign-art',
+        src: campaign.image_url,
+        alt: '',
+        loading: 'lazy',
+        referrerpolicy: 'no-referrer',
+        onerror: (event) => { event.target.hidden = true; },
+      })
+    : null;
   const head = el('div', { class: 'campaign-head' },
+    art,
     el('span', { class: 'game', text: campaign.game?.name || '—' }),
     el('span', { class: 'name', text: campaign.name }),
     el('span', { class: 'badge accent', text: `${campaign.claimed_drops}/${campaign.total_drops}` }),
@@ -1014,6 +1056,7 @@ function campaignCard(campaign) {
           el('div', { class: 'drop-title-line' },
             el('span', { text: drop.name }),
             drop.claimed ? el('span', { class: 'badge green', text: t('claimed') }) : null,
+            rewardArt(drop.benefits),
           ),
           drop.rewards
             ? el('div', { class: 'drop-rewards', text: drop.rewards })
@@ -1203,6 +1246,30 @@ function inventoryEntries() {
   return entries;
 }
 
+function rewardArt(benefits, limit = 3) {
+  const withImage = (benefits || []).filter((benefit) => benefit?.image_url);
+  if (!withImage.length) return null;
+  const row = el('span', { class: 'reward-art' });
+  for (const benefit of withImage.slice(0, limit)) {
+    row.append(el('img', {
+      class: 'reward-img',
+      src: benefit.image_url,
+      alt: benefit.name,
+      title: benefit.name,
+      loading: 'lazy',
+      referrerpolicy: 'no-referrer',
+      onerror: (event) => { event.target.hidden = true; },
+    }));
+  }
+  if (withImage.length > limit) {
+    row.append(el('span', {
+      class: 'reward-more',
+      text: `+${withImage.length - limit}`,
+    }));
+  }
+  return row;
+}
+
 function statusBadge(status) {
   const label = {
     claimed: 'claimed', ready: 'ready', progress: 'in_progress', locked: 'locked',
@@ -1230,6 +1297,7 @@ function inventoryRow({ campaign, drop, status }) {
   const title = el('div', { class: 'row-title' },
     el('strong', { text: drop.name }),
     statusBadge(status),
+    rewardArt(drop.benefits),
   );
   const sub = el('div', { class: 'row-sub' },
     `${campaign.game?.name || '—'} · ${campaign.name}`
@@ -1401,6 +1469,7 @@ function renderApiInfo() {
     [t('api_listening'), api.listening ? t('yes') : t('no')],
     [t('api_bind'), api.bind || '—'],
     [t('api_url'), api.url || '—'],
+    [t('api_auth'), api.auth ? t('api_auth_enabled') : t('api_auth_disabled')],
     [t('api_token'), token?.configured ? t('api_token_set') : '—'],
   ];
   for (const [key, value] of rows) {
@@ -1507,7 +1576,10 @@ function switchTab(tab) {
   }
   if (tab === 'channels') loadChannels().catch(() => {});
   if (tab === 'campaigns') loadCampaigns().catch(() => {});
-  if (tab === 'settings') loadSettings().catch(() => {});
+  if (tab === 'settings') {
+    loadSettings().catch(() => {});
+    loadLogin().catch(() => {});
+  }
   if (tab === 'logs') loadLogs().catch(() => {});
 }
 
@@ -1607,6 +1679,16 @@ async function init() {
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   bindEvents();
   applyLanguage();
+
+  state.authRequired = await checkAuthRequired();
+  if (!state.authRequired) {
+    try {
+      await connect('');
+    } catch {
+      showGate();
+    }
+    return;
+  }
 
   const hashToken = tokenFromHash();
   if (hashToken) {

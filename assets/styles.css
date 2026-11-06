@@ -360,6 +360,25 @@ select.compact { padding: 6px 9px; }
 .drop-row .drop-name { min-width: 0; overflow: hidden; }
 .drop-title-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .drop-rewards { color: var(--muted); font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reward-art { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; }
+.reward-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
+.reward-more { color: var(--muted); font-size: 11px; }
+.campaign-art {
+  width: 42px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  flex-shrink: 0;
+}
 .drop-row .drop-progress { display: flex; align-items: center; gap: 8px; }
 .drop-row .drop-progress .bar { flex: 1; }
 .drop-row .drop-minutes { color: var(--muted); font-size: 12px; white-space: nowrap; }

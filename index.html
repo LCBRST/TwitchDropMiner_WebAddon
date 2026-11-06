@@ -31,6 +31,7 @@
         <span id="version" class="badge muted-badge"></span>
       </div>
       <div class="chips">
+        <span id="chip-auth" class="chip warn" hidden></span>
         <span id="chip-state" class="chip">…</span>
         <span id="chip-login" class="chip">…</span>
         <span id="chip-watching" class="chip">…</span>
@@ -80,25 +81,6 @@
             <button type="button" data-action="unwatch" data-i18n="unwatch">Stop watching</button>
             <button type="button" data-action="claim" data-i18n="claim">Claim ready drops</button>
             <button type="button" data-action="exit" class="danger" data-i18n="exit">Exit miner</button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2 data-i18n="signin_panel">Twitch sign-in</h2>
-            <span id="signin-state" class="muted"></span>
-          </div>
-          <div id="signin-info" class="kv"></div>
-          <div class="actions">
-            <button type="button" id="signin-browser" class="primary" data-i18n="signin_browser">Sign in with browser</button>
-            <button type="button" id="signin-renew" data-i18n="signin_renew">Renew session</button>
-            <button type="button" id="signin-cancel" class="danger" data-i18n="signin_cancel" hidden>Cancel sign-in</button>
-            <a id="signin-open" class="button primary" target="_blank" rel="noopener" data-i18n="signin_open" hidden>Open sign-in page</a>
-          </div>
-          <p id="signin-hint" class="muted"></p>
-          <div id="signin-viewer" class="signin-viewer" hidden>
-            <iframe id="signin-frame" title="Twitch sign-in"
-                    allow="clipboard-read; clipboard-write"></iframe>
           </div>
         </section>
 
@@ -172,6 +154,24 @@
           <div class="actions">
             <button type="button" id="settings-save" class="primary" data-i18n="save">Save</button>
             <span id="settings-status" class="muted"></span>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="signin_panel">Twitch sign-in</h2>
+            <span id="signin-state" class="muted"></span>
+          </div>
+          <div id="signin-info" class="kv"></div>
+          <div class="actions">
+            <button type="button" id="signin-browser" class="primary" data-i18n="signin_browser">Sign in with browser</button>
+            <button type="button" id="signin-renew" data-i18n="signin_renew">Renew session</button>
+            <button type="button" id="signin-cancel" class="danger" data-i18n="signin_cancel" hidden>Cancel sign-in</button>
+            <a id="signin-open" class="button primary" target="_blank" rel="noopener" data-i18n="signin_open" hidden>Open sign-in page</a>
+          </div>
+          <p id="signin-hint" class="muted"></p>
+          <div id="signin-viewer" class="signin-viewer" hidden>
+            <iframe id="signin-frame" title="Twitch sign-in"
+                    allow="clipboard-read; clipboard-write"></iframe>
           </div>
         </section>
         <section class="panel">

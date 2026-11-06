@@ -33,9 +33,10 @@ api copy
 the address bar by the page; it is never sent to the server or in a Referer.
 
 The listener binds all interfaces by default (`0.0.0.0:8091`), so a phone or
-another computer on the LAN can open it. Every API call still needs the token.
-On a network you do not trust, set `api_host` back to `127.0.0.1` to keep the
-dashboard on the miner's own machine:
+another computer on the LAN can open it. API calls need the token unless token
+authentication is turned off (`api auth off`); the page detects that through
+`/auth` and connects directly. On a network you do not trust, set `api_host`
+back to `127.0.0.1` to keep the dashboard on the miner's own machine:
 
 ```
 set api_host 127.0.0.1
