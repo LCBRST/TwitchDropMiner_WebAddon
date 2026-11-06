@@ -1146,14 +1146,32 @@ function bindEvents() {
   });
 }
 
+function tokenFromHash() {
+  // `api open` launches /#token=... so the dashboard can sign in without the
+  // user typing or copying anything. Fragments are not sent to the server.
+  const raw = location.hash.startsWith('#') ? location.hash.slice(1) : '';
+  if (!raw) return '';
+  return new URLSearchParams(raw).get('token') || '';
+}
+
 async function init() {
   state.lang = detectLanguage();
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   bindEvents();
   applyLanguage();
 
+  const hashToken = tokenFromHash();
+  if (hashToken) {
+    // Take the token out of the address bar and history before using it.
+    history.replaceState(null, '', location.pathname + location.search);
+    localStorage.setItem(TOKEN_KEY, hashToken);
+    sessionStorage.removeItem(TOKEN_SESSION_KEY);
+  }
   const token =
-    sessionStorage.getItem(TOKEN_SESSION_KEY) || localStorage.getItem(TOKEN_KEY) || '';
+    hashToken ||
+    sessionStorage.getItem(TOKEN_SESSION_KEY) ||
+    localStorage.getItem(TOKEN_KEY) ||
+    '';
   if (!token) {
     showGate();
     return;
@@ -1163,6 +1181,8 @@ async function init() {
     await connect(token);
   } catch {
     state.token = '';
+    localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_SESSION_KEY);
     showGate();
   }
 }

@@ -16,10 +16,21 @@ api on          # start the API on 127.0.0.1:8091 and generate a token
 api token       # print the token
 ```
 
-Then open `http://127.0.0.1:8091/` and paste the token.
+Then either let the miner open the page already signed in:
+
+```
+api open       # opens http://127.0.0.1:8091/#token=... in your browser
+```
+
+or copy the token to the clipboard and paste it into the page:
+
+```
+api copy
+```
 
 `api` (or `api status`) shows the address, `api off` stops it, and
-`api rotate` issues a new token. The listener defaults to loopback only. To use
+`api rotate` issues a new token. The token fragment is read and removed from
+the address bar by the page; it is never sent to the server or in a Referer. The listener defaults to loopback only. To use
 it from another machine, set a different bind address deliberately:
 
 ```
