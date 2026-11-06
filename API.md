@@ -1,8 +1,9 @@
 # Management API
 
 The miner's management API listens on `api_host:api_port` (default
-`127.0.0.1:8091`). Every `/api/*` request needs the token printed by
-`api token`:
+`0.0.0.0:8091`, so LAN devices can reach it; set `api_host` to `127.0.0.1` to
+restrict it to the miner's machine). Every `/api/*` request needs the token
+printed by `api token`:
 
 ```
 X-API-Token: <token>

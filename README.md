@@ -12,7 +12,7 @@ in a browser and sign in with the management token.
 In the miner's console:
 
 ```
-api on          # start the API on 127.0.0.1:8091 and generate a token
+api on          # start the API on :8091 (LAN) and generate a token
 api token       # print the token
 ```
 
@@ -30,15 +30,18 @@ api copy
 
 `api` (or `api status`) shows the address, `api off` stops it, and
 `api rotate` issues a new token. The token fragment is read and removed from
-the address bar by the page; it is never sent to the server or in a Referer. The listener defaults to loopback only. To use
-it from another machine, set a different bind address deliberately:
+the address bar by the page; it is never sent to the server or in a Referer.
+
+The listener binds all interfaces by default (`0.0.0.0:8091`), so a phone or
+another computer on the LAN can open it. Every API call still needs the token.
+On a network you do not trust, set `api_host` back to `127.0.0.1` to keep the
+dashboard on the miner's own machine:
 
 ```
-set api_host 0.0.0.0
-set api_port 8091
+set api_host 127.0.0.1
 ```
 
-Only do that on a network you trust: anyone with the token can pause mining,
+Anyone with the token can pause mining,
 select channels, claim drops, change settings and exit the miner.
 
 ## What it does
