@@ -342,10 +342,24 @@ select.compact { padding: 6px 9px; }
   border-radius: 9px;
   background: var(--panel-2);
 }
-.drop-row .drop-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drop-row .drop-name { min-width: 0; overflow: hidden; }
+.drop-title-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.drop-rewards { color: var(--muted); font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .drop-row .drop-progress { display: flex; align-items: center; gap: 8px; }
 .drop-row .drop-progress .bar { flex: 1; }
 .drop-row .drop-minutes { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+/* Drop-centric inventory rows */
+.inv-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(180px, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+.inv-row .row-main { min-width: 0; }
+.inv-row .drop-progress { display: flex; align-items: center; gap: 10px; }
+.inv-row .drop-progress .bar { flex: 1; }
+.inv-row .drop-minutes { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
 /* ---------- settings form ---------- */
 
@@ -410,6 +424,7 @@ select.compact { padding: 6px 9px; }
   main { padding: 12px; }
   .drop-live .row { grid-template-columns: 1fr; gap: 5px; }
   .drop-row { grid-template-columns: 1fr; gap: 6px; }
+  .inv-row { grid-template-columns: 1fr; gap: 8px; }
   .row-card { align-items: flex-start; flex-wrap: wrap; }
   .row-side { width: 100%; justify-content: space-between; }
 }

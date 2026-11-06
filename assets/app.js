@@ -22,6 +22,7 @@ const I18N = {
     connection_failed: 'Could not reach the miner.',
     disconnect: 'Disconnect',
     tab_overview: 'Overview',
+    tab_inventory: 'Drops inventory',
     tab_channels: 'Channels',
     tab_campaigns: 'Campaigns',
     tab_settings: 'Settings',
@@ -32,9 +33,32 @@ const I18N = {
     uptime: 'Uptime',
     not_watching: 'not watching',
     campaigns: 'Campaigns',
+    active_campaigns: 'Active',
+    claimed_drops: 'Claimed drops',
+    ready_drops: 'Ready to claim',
+    drops_total: 'Drops',
+    drops_in_progress: 'In progress',
+    drops_locked: 'Locked',
     channels: 'Channels',
     wanted_games: 'Wanted games',
     websockets: 'Websockets',
+    account: 'Account & session',
+    account_user: 'User',
+    account_login: 'Login',
+    account_state: 'Engine state',
+    account_uptime: 'Uptime',
+    account_api: 'Dashboard',
+    account_session: 'Imported session',
+    session_expires: 'valid until {when}',
+    session_none: 'not imported',
+    search_drops: 'Search drops',
+    all_games: 'All games',
+    inventory_empty: 'No drops match this filter.',
+    rewards: 'Rewards',
+    in_progress: 'In progress',
+    ready: 'Ready',
+    locked: 'Locked',
+    allowed_channels: '{count} allowed channel(s)',
     current_drop: 'Current drop',
     nothing_mining: 'Nothing is being mined right now.',
     campaign: 'Campaign',
@@ -133,6 +157,7 @@ const I18N = {
     connection_failed: '无法连接矿工。',
     disconnect: '断开',
     tab_overview: '概览',
+    tab_inventory: '掉宝仓库',
     tab_channels: '频道',
     tab_campaigns: '活动',
     tab_settings: '设置',
@@ -143,9 +168,32 @@ const I18N = {
     uptime: '运行',
     not_watching: '未观看',
     campaigns: '活动',
+    active_campaigns: '进行中',
+    claimed_drops: '已领取掉宝',
+    ready_drops: '可领取',
+    drops_total: '掉宝总数',
+    drops_in_progress: '进行中',
+    drops_locked: '未解锁',
     channels: '频道',
     wanted_games: '目标游戏',
     websockets: 'Websocket',
+    account: '账号与会话',
+    account_user: '用户',
+    account_login: '登录',
+    account_state: '引擎状态',
+    account_uptime: '运行时长',
+    account_api: '控制台地址',
+    account_session: '导入会话',
+    session_expires: '有效至 {when}',
+    session_none: '尚未导入',
+    search_drops: '搜索掉宝',
+    all_games: '全部游戏',
+    inventory_empty: '没有符合筛选条件的掉宝。',
+    rewards: '奖励',
+    in_progress: '进行中',
+    ready: '可领取',
+    locked: '未解锁',
+    allowed_channels: '限定 {count} 个频道',
     current_drop: '当前掉宝',
     nothing_mining: '当前没有在挖任何掉宝。',
     campaign: '活动',
@@ -247,6 +295,7 @@ I18N['zh-TW'] = {
   connection_failed: '無法連線礦工。',
   disconnect: '中斷',
   tab_overview: '總覽',
+  tab_inventory: '掉寶倉庫',
   tab_channels: '頻道',
   tab_campaigns: '活動',
   tab_settings: '設定',
@@ -257,8 +306,31 @@ I18N['zh-TW'] = {
   uptime: '執行',
   not_watching: '未觀看',
   campaigns: '活動',
+  active_campaigns: '進行中',
+  claimed_drops: '已領取掉寶',
+  ready_drops: '可領取',
+  drops_total: '掉寶總數',
+  drops_in_progress: '進行中',
+  drops_locked: '未解鎖',
   channels: '頻道',
   wanted_games: '目標遊戲',
+  account: '帳號與工作階段',
+  account_user: '使用者',
+  account_login: '登入',
+  account_state: '引擎狀態',
+  account_uptime: '執行時間',
+  account_api: '主控台位址',
+  account_session: '匯入工作階段',
+  session_expires: '有效至 {when}',
+  session_none: '尚未匯入',
+  search_drops: '搜尋掉寶',
+  all_games: '全部遊戲',
+  inventory_empty: '沒有符合篩選條件的掉寶。',
+  rewards: '獎勵',
+  in_progress: '進行中',
+  ready: '可領取',
+  locked: '未解鎖',
+  allowed_channels: '限定 {count} 個頻道',
   current_drop: '目前掉寶',
   nothing_mining: '目前沒有在挖任何掉寶。',
   quick_actions: '快速操作',
@@ -504,6 +576,7 @@ async function loadCampaigns() {
   const data = await apiGet('/api/campaigns');
   state.campaigns = data.campaigns || [];
   renderCampaigns();
+  renderInventory();
 }
 
 async function loadSettings() {
@@ -647,9 +720,23 @@ function startEvents() {
 // rendering
 // ---------------------------------------------------------------------------
 
+function isPaused() {
+  return state.status?.state === 'IDLE';
+}
+
+function renderToggle() {
+  const button = $('#toggle-mining');
+  if (!button) return;
+  const paused = isPaused();
+  button.textContent = paused ? t('resume') : t('pause');
+  button.dataset.mode = paused ? 'resume' : 'pause';
+  button.disabled = state.status?.state === 'EXIT';
+}
+
 function renderHeader() {
   const status = state.status;
   if (!status) return;
+  renderToggle();
   $('#version').textContent = status.version || '';
   const stateName =
     status.state === 'CHANNEL_SWITCH' && status.watching ? 'WATCHING' : status.state;
@@ -677,8 +764,10 @@ function renderOverview() {
   const status = state.status;
   if (!status) return;
   $('#stat-campaigns').textContent = status.counts?.campaigns ?? '—';
+  $('#stat-active').textContent = status.counts?.active_campaigns ?? '—';
+  $('#stat-claimed').textContent = status.counts?.claimed_drops ?? '—';
+  $('#stat-ready').textContent = status.counts?.claimable_drops ?? '—';
   $('#stat-channels').textContent = status.counts?.channels ?? '—';
-  $('#stat-wanted').textContent = status.counts?.wanted_games ?? '—';
   $('#stat-ws').textContent = status.counts?.websockets ?? '—';
 
   const container = clear($('#current-drop'));
@@ -725,6 +814,33 @@ function renderOverview() {
       ),
     );
   }
+
+  renderAccount();
+}
+
+function kvRow(key, value) {
+  return [
+    el('span', { class: 'k', text: key }),
+    el('span', { class: 'v', text: value ?? '—' }),
+  ];
+}
+
+function renderAccount() {
+  const container = clear($('#account-info'));
+  const status = state.status;
+  const login = state.login || {};
+  const session = login.active && login.expires_at
+    ? t('session_expires', { when: formatDate(new Date(login.expires_at * 1000).toISOString()) })
+    : t('session_none');
+  const rows = [
+    kvRow(t('account_user'), login.user_id || status?.login?.user_id),
+    kvRow(t('account_login'), status?.login?.status),
+    kvRow(t('account_state'), status?.state),
+    kvRow(t('account_uptime'), formatUptime(status?.uptime_seconds)),
+    kvRow(t('account_session'), session),
+    kvRow(t('account_api'), state.api?.url || location.origin + '/'),
+  ];
+  for (const row of rows) container.append(...row);
 }
 
 function channelRow(channel) {
@@ -795,6 +911,9 @@ function campaignCard(campaign) {
     el('span', { class: 'game', text: campaign.game?.name || '—' }),
     el('span', { class: 'name', text: campaign.name }),
     el('span', { class: 'badge accent', text: `${campaign.claimed_drops}/${campaign.total_drops}` }),
+    campaign.allowed_channels?.length
+      ? el('span', { class: 'badge', text: t('allowed_channels', { count: campaign.allowed_channels.length }) })
+      : null,
     !campaign.linked ? el('span', { class: 'badge amber', text: t('unlinked') }) : null,
     campaign.finished ? el('span', { class: 'badge green', text: t('claimed') }) : null,
   );
@@ -817,8 +936,13 @@ function campaignCard(campaign) {
     drops.append(
       el('div', { class: 'drop-row' },
         el('div', { class: 'drop-name' },
-          el('span', { text: drop.name }),
-          drop.claimed ? el('span', { class: 'badge green', text: t('claimed') }) : null,
+          el('div', { class: 'drop-title-line' },
+            el('span', { text: drop.name }),
+            drop.claimed ? el('span', { class: 'badge green', text: t('claimed') }) : null,
+          ),
+          drop.rewards
+            ? el('div', { class: 'drop-rewards', text: drop.rewards })
+            : null,
         ),
         el('div', { class: 'drop-progress' },
           progressBar(drop.progress, true),
@@ -862,6 +986,115 @@ function renderCampaigns() {
     return;
   }
   for (const campaign of list) container.append(campaignCard(campaign));
+}
+
+function dropStatus(drop) {
+  if (drop.claimed) return 'claimed';
+  if (drop.claimable) return 'ready';
+  if (drop.can_earn) return 'progress';
+  return 'locked';
+}
+
+function inventoryEntries() {
+  const entries = [];
+  for (const campaign of state.campaigns) {
+    for (const drop of campaign.drops) {
+      entries.push({ campaign, drop, status: dropStatus(drop) });
+    }
+  }
+  return entries;
+}
+
+function statusBadge(status) {
+  const label = {
+    claimed: 'claimed', ready: 'ready', progress: 'in_progress', locked: 'locked',
+  }[status] || status;
+  const cls = {
+    claimed: 'green', ready: 'accent', progress: 'amber', locked: '',
+  }[status] || '';
+  return el('span', { class: `badge ${cls}`.trim(), text: t(label) });
+}
+
+function fillInventoryGames() {
+  const select = $('#inventory-game');
+  if (!select) return;
+  const current = select.value;
+  const games = [...new Set(
+    state.campaigns.map((campaign) => campaign.game?.name).filter(Boolean),
+  )].sort();
+  clear(select);
+  select.append(el('option', { value: '', text: t('all_games') }));
+  for (const game of games) select.append(el('option', { value: game, text: game }));
+  select.value = games.includes(current) ? current : '';
+}
+
+function inventoryRow({ campaign, drop, status }) {
+  const title = el('div', { class: 'row-title' },
+    el('strong', { text: drop.name }),
+    statusBadge(status),
+  );
+  const sub = el('div', { class: 'row-sub' },
+    `${campaign.game?.name || '—'} · ${campaign.name}`
+      + (drop.rewards ? ` · ${t('rewards')}: ${drop.rewards}` : ''),
+  );
+  const progress = el('div', { class: 'drop-progress' },
+    progressBar(drop.progress, true),
+    el('span', { class: 'drop-minutes', text: t('minutes', {
+      current: drop.current_minutes, required: drop.required_minutes,
+    }) }),
+  );
+  const action = drop.claimable
+    ? el('button', {
+        type: 'button', class: 'small', text: t('claim_now'),
+        onclick: () => claimDrop(drop),
+      })
+    : el('span', { class: 'muted', text: pct(drop.progress) });
+  return el('div', { class: 'row-card inv-row' },
+    el('div', { class: 'row-main' }, title, sub),
+    progress,
+    el('div', { class: 'row-side' }, action),
+  );
+}
+
+function renderInventory() {
+  const list = $('#inventory-list');
+  if (!list) return;
+  fillInventoryGames();
+  const entries = inventoryEntries();
+  const counts = {
+    progress: entries.filter((entry) => entry.status === 'progress').length,
+    ready: entries.filter((entry) => entry.status === 'ready').length,
+    claimed: entries.filter((entry) => entry.status === 'claimed').length,
+  };
+  $('#inv-total').textContent = entries.length;
+  $('#inv-progress').textContent = counts.progress;
+  $('#inv-ready').textContent = counts.ready;
+  $('#inv-claimed').textContent = counts.claimed;
+
+  const query = $('#inventory-search').value.trim().toLowerCase();
+  const statusFilter = $('#inventory-status').value;
+  const gameFilter = $('#inventory-game').value;
+  const filtered = entries
+    .filter(({ campaign, drop, status }) => {
+      if (statusFilter !== 'all' && status !== statusFilter) return false;
+      if (gameFilter && campaign.game?.name !== gameFilter) return false;
+      if (!query) return true;
+      return [drop.name, campaign.name, campaign.game?.name, drop.rewards]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      const order = { ready: 0, progress: 1, locked: 2, claimed: 3 };
+      if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+      return String(a.campaign.ends_at || '').localeCompare(String(b.campaign.ends_at || ''));
+    });
+
+  clear(list);
+  if (!filtered.length) {
+    list.append(el('p', { class: 'empty', text: t('inventory_empty') }));
+    return;
+  }
+  for (const entry of filtered) list.append(inventoryRow(entry));
 }
 
 function field(labelText, control, hint = null, wide = false) {
@@ -1056,6 +1289,7 @@ function applyLanguage() {
   renderOverview();
   renderChannels();
   renderCampaigns();
+  renderInventory();
   renderSettings();
   renderApiInfo();
 }
@@ -1072,6 +1306,10 @@ function switchTab(tab) {
   }
   for (const section of $$('.tab')) {
     section.classList.toggle('active', section.id === `tab-${tab}`);
+  }
+  if (tab === 'inventory') {
+    renderInventory();
+    loadCampaigns().catch(() => {});
   }
   if (tab === 'channels') loadChannels().catch(() => {});
   if (tab === 'campaigns') loadCampaigns().catch(() => {});
@@ -1127,6 +1365,13 @@ function bindEvents() {
   for (const button of $$('[data-action]')) {
     button.addEventListener('click', () => runAction(button.dataset.action));
   }
+  $('#toggle-mining').addEventListener('click', () => {
+    runAction(isPaused() ? 'resume' : 'pause');
+  });
+  $('#inventory-search').addEventListener('input', renderInventory);
+  $('#inventory-status').addEventListener('change', renderInventory);
+  $('#inventory-game').addEventListener('change', renderInventory);
+  $('#inventory-refresh').addEventListener('click', () => loadCampaigns().catch(() => {}));
   $('#channel-search').addEventListener('input', renderChannels);
   $('#channels-online').addEventListener('change', renderChannels);
   $('#channels-watchable').addEventListener('change', renderChannels);

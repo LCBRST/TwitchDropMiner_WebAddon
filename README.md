@@ -48,14 +48,16 @@ select channels, claim drops, change settings and exit the miner.
 
 - Live engine state, login, watching channel, uptime and websocket status
 - Current drop and campaign progress, updated over Server-Sent Events
+- A drop-centric inventory with rewards, progress, status filters and claim
+  buttons
 - Channel list with online/ACL/drops badges, search and one-click watch
-- Campaign browser with per-drop progress and claim buttons
+- Campaign browser with per-drop rewards, progress and claim buttons
 - Settings editor: priority list, excluded games, priority mode, miner
   language, proxy, connection quality, reload interval, badges/emotes,
   available-drops check and the sign-in endpoint
-- Live console log with follow mode
-- Quick actions: pause, resume, refresh inventory, stop watching, claim ready
-  drops, exit
+- Account and session panel, wanted-game pills and a live console log
+- Quick actions with a single pause/resume toggle, refresh inventory, stop
+  watching, claim ready drops and exit
 
 The UI is available in English, Simplified Chinese and Traditional Chinese and
 has light/dark themes. All requests are same-origin.
