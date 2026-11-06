@@ -135,7 +135,6 @@ const I18N = {
     badges_emotes: 'Include badge and emote campaigns',
     drops_check: 'Extra available-drops check',
     drops_check_hint: 'Turn this off if channels stop being mined.',
-    tray_notifications: 'Tray notifications',
     advanced: 'Advanced',
     login_server: 'Sign-in page endpoint',
     host: 'Host',
@@ -294,7 +293,6 @@ const I18N = {
     badges_emotes: '包含徽章/表情活动',
     drops_check: '额外的掉宝可用性检查',
     drops_check_hint: '如果频道不再被挖，请关闭此项。',
-    tray_notifications: '托盘通知',
     advanced: '高级',
     login_server: '登录页面',
     host: '地址',
@@ -451,7 +449,6 @@ I18N['zh-TW'] = {
   badges_emotes: '包含徽章/表情活動',
   drops_check: '額外的掉寶可用性檢查',
   drops_check_hint: '如果頻道不再被挖，請關閉此項。',
-  tray_notifications: '系統匣通知',
   advanced: '進階',
   login_server: '登入頁面',
   host: '位址',
@@ -1341,8 +1338,6 @@ function renderSettings() {
   badges.checked = Boolean(s.enable_badges_emotes);
   const dropsCheck = el('input', { type: 'checkbox' });
   dropsCheck.checked = Boolean(s.available_drops_check);
-  const tray = el('input', { type: 'checkbox' });
-  tray.checked = Boolean(s.tray_notifications);
 
   const loginEnabled = el('input', { type: 'checkbox' });
   loginEnabled.checked = Boolean(s.login_server_enabled);
@@ -1360,7 +1355,6 @@ function renderSettings() {
     field(t('reload_interval'), interval),
     field(t('badges_emotes'), el('label', { class: 'check' }, badges, el('span', { text: t('badges_emotes') }))),
     field(t('drops_check'), el('label', { class: 'check' }, dropsCheck, el('span', { text: t('drops_check') })), t('drops_check_hint')),
-    field(t('tray_notifications'), el('label', { class: 'check' }, tray, el('span', { text: t('tray_notifications') }))),
     field(t('advanced'), el('label', { class: 'check' }, loginEnabled, el('span', { text: t('login_server') })), null, true),
     field(t('host'), loginHost),
     field(t('port'), loginPort),
@@ -1380,7 +1374,6 @@ function renderSettings() {
       reload_interval: Number(interval.value),
       enable_badges_emotes: badges.checked,
       available_drops_check: dropsCheck.checked,
-      tray_notifications: tray.checked,
       login_server_enabled: loginEnabled.checked,
       login_server_host: loginHost.value.trim(),
       login_server_port: Number(loginPort.value),

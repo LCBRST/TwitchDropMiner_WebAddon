@@ -53,7 +53,7 @@ one-off token and cookie; the proxy does not add authentication.
 `priority` (list), `exclude` (list), `priority_mode` (`priority_only`,
 `ending_soonest`, `low_avbl_first`), `language`, `proxy`, `connection_quality`
 (0–2), `reload_interval` (10–1440), `enable_badges_emotes`,
-`available_drops_check`, `tray_notifications`, `login_server_enabled`,
+`available_drops_check`, `login_server_enabled`,
 `login_server_host`, `login_server_port`, `renewal_browser_path`.
 
 `api_enabled`, `api_host`, `api_port` and `api_token` are intentionally
