@@ -15,6 +15,11 @@ returns `{"ok": true}` without auth.
 
 Errors are JSON: `{"error": "message"}` with a 4xx status.
 
+`/login`, `/login/{token}`, `/login/state`, `/login/ready`, `/login/cancel` and
+the `/login/ws` WebSocket are proxied to the sign-in endpoint, so the embedded
+viewer works on the dashboard's own port. They keep the sign-in endpoint's
+one-off token and cookie; the proxy does not add authentication.
+
 ## Read
 
 | Method | Path | Response |

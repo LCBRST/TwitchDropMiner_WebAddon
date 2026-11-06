@@ -319,6 +319,17 @@ select.compact { padding: 6px 9px; }
   font-size: 12.5px;
 }
 
+.signin-viewer { margin-top: 14px; }
+.signin-viewer iframe {
+  display: block;
+  width: 100%;
+  height: min(68vh, 720px);
+  min-height: 360px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #000;
+}
+
 .ws-list { display: grid; gap: 6px; }
 .ws-item { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; background: var(--panel-2); }
 .ws-item span:last-child { color: var(--muted); }

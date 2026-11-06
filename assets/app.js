@@ -1077,8 +1077,10 @@ function loginStateLabel(login) {
 function signinURL(login) {
   const urls = login?.urls || [];
   if (!urls.length) return '';
-  // Prefer the same host the dashboard itself is open at, so a dashboard
-  // reached over the LAN links to the LAN address of the sign-in page.
+  // The dashboard proxies /login/* through its own port, so keep only the path
+  // and put it on the origin the dashboard itself is open at. That is what
+  // removes the need to forward the sign-in port separately.
+  let chosen = urls[0];
   const match = urls.find((url) => {
     try {
       return new URL(url).hostname === location.hostname;
@@ -1086,7 +1088,13 @@ function signinURL(login) {
       return false;
     }
   });
-  return match || urls[0];
+  if (match) chosen = match;
+  try {
+    const parsed = new URL(chosen);
+    return `${location.origin}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return chosen;
+  }
 }
 
 function renderLogin() {
@@ -1126,6 +1134,22 @@ function renderLogin() {
   $('#signin-hint').textContent = active
     ? (link ? t('signin_hint_active') : t('signin_hint_no_page'))
     : t('signin_hint');
+
+  // Embed the viewer only while a sign-in is running; blank it afterwards so
+  // the page stops streaming and drops its sign-in cookie.
+  const viewer = $('#signin-viewer');
+  const frame = $('#signin-frame');
+  const showViewer = active && Boolean(link);
+  viewer.hidden = !showViewer;
+  if (showViewer) {
+    if (frame.dataset.url !== link) {
+      frame.dataset.url = link;
+      frame.src = link;
+    }
+  } else if (frame.dataset.url) {
+    frame.dataset.url = '';
+    frame.src = 'about:blank';
+  }
 }
 
 function scheduleLoginPoll() {

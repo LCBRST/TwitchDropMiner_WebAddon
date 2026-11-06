@@ -56,8 +56,9 @@ select channels, claim drops, change settings and exit the miner.
   language, proxy, connection quality, reload interval, badges/emotes,
   available-drops check and the sign-in endpoint
 - Account and session panel, wanted-game pills and a live console log
-- Start or cancel a Twitch browser sign-in, open the sign-in page it serves,
-  and request a session renewal without leaving the dashboard
+- Start or cancel a Twitch browser sign-in and request a session renewal without
+  leaving the dashboard. The sign-in viewer is embedded in the page and proxied
+  through the dashboard's own port, so only that port needs forwarding.
 - Quick actions with a single pause/resume toggle, refresh inventory, stop
   watching, claim ready drops and exit
 
