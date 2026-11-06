@@ -229,7 +229,11 @@ button, .button {
   padding: 8px 13px;
   border-radius: 9px;
   transition: background .15s ease, border-color .15s ease;
+  text-decoration: none;
+  display: inline-block;
 }
+a.button:hover { border-color: var(--accent); }
+a.button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button:hover { border-color: var(--accent); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }

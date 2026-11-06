@@ -85,6 +85,21 @@
         </section>
 
         <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="signin_panel">Twitch sign-in</h2>
+            <span id="signin-state" class="muted"></span>
+          </div>
+          <div id="signin-info" class="kv"></div>
+          <div class="actions">
+            <button type="button" id="signin-browser" class="primary" data-i18n="signin_browser">Sign in with browser</button>
+            <button type="button" id="signin-renew" data-i18n="signin_renew">Renew session</button>
+            <button type="button" id="signin-cancel" class="danger" data-i18n="signin_cancel" hidden>Cancel sign-in</button>
+            <a id="signin-open" class="button primary" target="_blank" rel="noopener" data-i18n="signin_open" hidden>Open sign-in page</a>
+          </div>
+          <p id="signin-hint" class="muted"></p>
+        </section>
+
+        <section class="panel">
           <div class="panel-head"><h2 data-i18n="account">Account &amp; session</h2></div>
           <div id="account-info" class="kv"></div>
         </section>

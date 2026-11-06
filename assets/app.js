@@ -51,6 +51,30 @@ const I18N = {
     account_session: 'Imported session',
     session_expires: 'valid until {when}',
     session_none: 'not imported',
+    signin_panel: 'Twitch sign-in',
+    signin_browser: 'Sign in with browser',
+    signin_renew: 'Renew session',
+    signin_cancel: 'Cancel sign-in',
+    signin_open: 'Open sign-in page',
+    signin_hint: 'On a headless miner, start a sign-in and open the page it serves to drive the browser from here.',
+    signin_hint_active: 'A sign-in is running. Open the page below and sign in to Twitch there.',
+    signin_hint_no_page: 'The sign-in browser is open on the miner itself.',
+    signin_started: 'Sign-in started.',
+    signin_renew_requested: 'Renewal requested.',
+    signin_cancelled: 'Sign-in cancelled.',
+    signin_unavailable: 'Cannot sign in: {message}',
+    signin_renew_unavailable: 'Cannot renew: {message}',
+    signin_session: 'Session',
+    signin_renewal: 'Renewal',
+    signin_renewal_auto: 'available with {browser}',
+    signin_renewal_off: 'unavailable ({reason})',
+    signin_renewal_error: 'last renewal failed: {error}',
+    login_state_idle: 'not running',
+    login_state_starting: 'starting the browser',
+    login_state_waiting: 'waiting for a sign-in',
+    login_state_signed_in: 'signed in, finishing',
+    login_state_captured: 'done',
+    login_state_failed: 'failed ({detail})',
     search_drops: 'Search drops',
     all_games: 'All games',
     inventory_empty: 'No drops match this filter.',
@@ -186,6 +210,30 @@ const I18N = {
     account_session: '导入会话',
     session_expires: '有效至 {when}',
     session_none: '尚未导入',
+    signin_panel: 'Twitch 登录',
+    signin_browser: '用浏览器登录',
+    signin_renew: '续签会话',
+    signin_cancel: '取消登录',
+    signin_open: '打开登录页面',
+    signin_hint: '无头机器上可以先发起登录，再打开它提供的页面，在网页里操作登录浏览器。',
+    signin_hint_active: '登录进行中。打开下面的页面，在那里登录 Twitch。',
+    signin_hint_no_page: '登录浏览器已经在矿工本机打开。',
+    signin_started: '登录已启动。',
+    signin_renew_requested: '已请求续签。',
+    signin_cancelled: '已取消登录。',
+    signin_unavailable: '无法登录：{message}',
+    signin_renew_unavailable: '无法续签：{message}',
+    signin_session: '会话',
+    signin_renewal: '续签',
+    signin_renewal_auto: '可用（{browser}）',
+    signin_renewal_off: '不可用（{reason}）',
+    signin_renewal_error: '上次续签失败：{error}',
+    login_state_idle: '未运行',
+    login_state_starting: '正在启动浏览器',
+    login_state_waiting: '等待登录',
+    login_state_signed_in: '已登录，正在完成',
+    login_state_captured: '完成',
+    login_state_failed: '失败（{detail}）',
     search_drops: '搜索掉宝',
     all_games: '全部游戏',
     inventory_empty: '没有符合筛选条件的掉宝。',
@@ -323,6 +371,30 @@ I18N['zh-TW'] = {
   account_session: '匯入工作階段',
   session_expires: '有效至 {when}',
   session_none: '尚未匯入',
+  signin_panel: 'Twitch 登入',
+  signin_browser: '用瀏覽器登入',
+  signin_renew: '續簽工作階段',
+  signin_cancel: '取消登入',
+  signin_open: '開啟登入頁面',
+  signin_hint: '無頭機器上可以先發起登入，再開啟它提供的頁面，在網頁裡操作登入瀏覽器。',
+  signin_hint_active: '登入進行中。開啟下面的頁面，在那裡登入 Twitch。',
+  signin_hint_no_page: '登入瀏覽器已經在礦工本機開啟。',
+  signin_started: '登入已啟動。',
+  signin_renew_requested: '已要求續簽。',
+  signin_cancelled: '已取消登入。',
+  signin_unavailable: '無法登入：{message}',
+  signin_renew_unavailable: '無法續簽：{message}',
+  signin_session: '工作階段',
+  signin_renewal: '續簽',
+  signin_renewal_auto: '可用（{browser}）',
+  signin_renewal_off: '不可用（{reason}）',
+  signin_renewal_error: '上次續簽失敗：{error}',
+  login_state_idle: '未執行',
+  login_state_starting: '正在啟動瀏覽器',
+  login_state_waiting: '等待登入',
+  login_state_signed_in: '已登入，正在完成',
+  login_state_captured: '完成',
+  login_state_failed: '失敗（{detail}）',
   search_drops: '搜尋掉寶',
   all_games: '全部遊戲',
   inventory_empty: '沒有符合篩選條件的掉寶。',
@@ -430,6 +502,7 @@ const state = {
   eventAbort: null,
   eventRetry: null,
   pollTimer: null,
+  loginPoll: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -541,7 +614,7 @@ async function apiGet(path) {
     throw new Error(t('invalid_token'));
   }
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  if (!response.ok) throw new Error(data.message || data.error || `HTTP ${response.status}`);
   return data;
 }
 
@@ -556,7 +629,7 @@ async function apiPost(path, body) {
     throw new Error(t('invalid_token'));
   }
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  if (!response.ok) throw new Error(data.message || data.error || `HTTP ${response.status}`);
   return data;
 }
 
@@ -589,7 +662,8 @@ async function loadSettings() {
 
 async function loadLogin() {
   state.login = await apiGet('/api/login');
-  renderHeader();
+  renderLogin();
+  scheduleLoginPoll();
 }
 
 async function loadLogs() {
@@ -618,6 +692,10 @@ function logout(expired = false) {
   state.token = '';
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_SESSION_KEY);
+  if (state.loginPoll) {
+    clearTimeout(state.loginPoll);
+    state.loginPoll = null;
+  }
   stopEvents();
   $('#app').hidden = true;
   $('#gate').hidden = false;
@@ -988,6 +1066,105 @@ function renderCampaigns() {
   for (const campaign of list) container.append(campaignCard(campaign));
 }
 
+function loginStateLabel(login) {
+  const status = login?.login_state || 'idle';
+  if (status === 'failed') {
+    return t('login_state_failed', { detail: login?.login_detail || '?' });
+  }
+  return t(`login_state_${status}`);
+}
+
+function signinURL(login) {
+  const urls = login?.urls || [];
+  if (!urls.length) return '';
+  // Prefer the same host the dashboard itself is open at, so a dashboard
+  // reached over the LAN links to the LAN address of the sign-in page.
+  const match = urls.find((url) => {
+    try {
+      return new URL(url).hostname === location.hostname;
+    } catch {
+      return false;
+    }
+  });
+  return match || urls[0];
+}
+
+function renderLogin() {
+  const login = state.login;
+  if (!login) return;
+  const status = login.login_state || 'idle';
+  $('#signin-state').textContent = loginStateLabel(login);
+
+  const info = clear($('#signin-info'));
+  const session = login.active && login.expires_at
+    ? t('session_expires', {
+        when: formatDate(new Date(login.expires_at * 1000).toISOString()),
+      })
+    : t('session_none');
+  const renewal = login.renewal_unavailable
+    ? t('signin_renewal_off', { reason: login.renewal_unavailable })
+    : login.browser
+      ? t('signin_renewal_auto', { browser: login.browser })
+      : t('signin_renewal_off', { reason: '?' });
+  const rows = [
+    kvRow(t('signin_session'), session),
+    kvRow(t('signin_renewal'), renewal),
+  ];
+  if (login.renewal_error) {
+    rows.push(kvRow(t('signin_renewal_error'), login.renewal_error));
+  }
+  for (const row of rows) info.append(...row);
+
+  const active = ['starting', 'waiting', 'signed_in'].includes(status);
+  const link = signinURL(login);
+  const open = $('#signin-open');
+  open.hidden = !link;
+  if (link) open.href = link;
+  $('#signin-cancel').hidden = !active;
+  $('#signin-browser').disabled = active;
+  $('#signin-renew').disabled = !login.active || Boolean(login.renewal_unavailable);
+  $('#signin-hint').textContent = active
+    ? (link ? t('signin_hint_active') : t('signin_hint_no_page'))
+    : t('signin_hint');
+}
+
+function scheduleLoginPoll() {
+  const status = state.login?.login_state || '';
+  const active = ['starting', 'waiting', 'signed_in'].includes(status);
+  if (!active) {
+    if (state.loginPoll) {
+      clearTimeout(state.loginPoll);
+      state.loginPoll = null;
+    }
+    return;
+  }
+  if (state.loginPoll) return;
+  state.loginPoll = setTimeout(async () => {
+    state.loginPoll = null;
+    try {
+      await loadLogin();
+      await loadStatus();
+      if (state.login?.login_state === 'captured' || state.login?.active) {
+        await loadCampaigns();
+      }
+    } catch {
+      // The next poll or the user's next action will pick it up.
+    }
+  }, 2000);
+}
+
+async function loginAction(action, successKey) {
+  try {
+    await apiPost(`/api/actions/${action}`);
+    toast(t(successKey));
+    await loadLogin();
+    await loadStatus();
+  } catch (error) {
+    const key = action === 'login-renew' ? 'signin_renew_unavailable' : 'signin_unavailable';
+    toast(t(key, { message: error.message }), true);
+  }
+}
+
 function dropStatus(drop) {
   if (drop.claimed) return 'claimed';
   if (drop.claimable) return 'ready';
@@ -1287,6 +1464,7 @@ function applyLanguage() {
   document.title = `TwitchDropsMiner Console`;
   renderHeader();
   renderOverview();
+  renderLogin();
   renderChannels();
   renderCampaigns();
   renderInventory();
@@ -1367,6 +1545,15 @@ function bindEvents() {
   }
   $('#toggle-mining').addEventListener('click', () => {
     runAction(isPaused() ? 'resume' : 'pause');
+  });
+  $('#signin-browser').addEventListener('click', () => {
+    loginAction('login-browser', 'signin_started');
+  });
+  $('#signin-renew').addEventListener('click', () => {
+    loginAction('login-renew', 'signin_renew_requested');
+  });
+  $('#signin-cancel').addEventListener('click', () => {
+    loginAction('login-cancel', 'signin_cancelled');
   });
   $('#inventory-search').addEventListener('input', renderInventory);
   $('#inventory-status').addEventListener('change', renderInventory);

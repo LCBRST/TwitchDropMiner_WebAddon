@@ -23,7 +23,7 @@ Errors are JSON: `{"error": "message"}` with a 4xx status.
 | GET | `/api/channels` | `{"channels": [...]}` — id, login, name, online, game, viewers, ACL/drops flags, watching/selected, `can_watch` |
 | GET | `/api/campaigns` | `{"campaigns": [...]}` — campaign metadata, progress and a `drops` array with minutes/progress/claimable |
 | GET | `/api/settings` | `{"settings": {...}, "api": {...}}`; `api_token` is `{"configured": bool}`, never the token |
-| GET | `/api/login` | sign-in/session/renewal status; sign-in URLs are omitted |
+| GET | `/api/login` | sign-in/session/renewal status, including the one-off `urls` of the sign-in page while it is listening |
 | GET | `/api/logs?limit=200` | `{"lines": [...]}` — the console output buffer (1–1000 lines) |
 | GET | `/api/events` | Server-Sent Events: `event: status` every 2 s, `event: logs` when the buffer changes |
 
@@ -39,8 +39,9 @@ Errors are JSON: `{"error": "message"}` with a 4xx status.
 | POST | `/api/actions/unwatch` | — |
 | POST | `/api/actions/exit` | — (shut the miner down) |
 | POST | `/api/actions/claim` | `{}` (all claimable) or `{"drop_id": "..."}` |
-| POST | `/api/actions/login-browser` | — (open the built-in browser sign-in) |
+| POST | `/api/actions/login-browser` | — (open the built-in browser sign-in; 409 `{reason, message}` when it cannot start) |
 | POST | `/api/actions/login-renew` | — (renew the imported session) |
+| POST | `/api/actions/login-cancel` | — (cancel a running sign-in) |
 
 ### Writable settings
 
